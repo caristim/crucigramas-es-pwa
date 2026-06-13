@@ -24,10 +24,11 @@ const els = {
   cluesAcross: document.getElementById('cluesAcross'),
   cluesDown: document.getElementById('cluesDown'),
   checkBtn: document.getElementById('checkBtn'),
-  clearBtn: document.getElementById('clearBtn')
+  clearBtn: document.getElementById('clearBtn'),
+  hiddenInput: document.getElementById('hiddenInput') // Captura el input oculto
 };
 
-/* ========= Loader (Corregido con rutas explícitas para GitHub Pages) ========= */
+/* ========= Loader ========= */
 async function loadIndex() {
   const res = await fetch('./data/index.json');
   if (!res.ok) throw new Error('No se pudo cargar ./data/index.json');
@@ -124,9 +125,16 @@ function renderBoard() {
         ch.textContent = cell.user || '';
         div.appendChild(ch);
 
+        // Evento adaptado tanto para clics como para pantallas táctiles de smartphone
         div.addEventListener('pointerdown', (ev) => {
           ev.preventDefault();
           selectCell(r, c);
+          
+          // FORZAR TECLADO EN CELULARES: Encasillamos el foco en el input invisible
+          if(els.hiddenInput) {
+            els.hiddenInput.value = '';
+            els.hiddenInput.focus();
+          }
         });
       }
 
@@ -323,12 +331,13 @@ function escapeHtml(s) {
   }[m]));
 }
 
-/* ========= Keyboard ========= */
+/* ========= Manejadores de entrada de texto (PC y Celular) ========= */
 function onKeyDown(ev) {
   if (!cw || !state.active) return;
 
   const tag = (ev.target?.tagName ?? '').toLowerCase();
-  if (tag === 'select' || tag === 'input' || tag === 'textarea') return;
+  // Permitimos que actúe si el foco viene de nuestro input oculto
+  if (tag === 'select' || (tag === 'input' && ev.target.id !== 'hiddenInput') || tag === 'textarea') return;
 
   const key = ev.key;
 
@@ -336,6 +345,7 @@ function onKeyDown(ev) {
     ev.preventDefault();
     clearAtActive();
     moveWithinActive(-1); 
+    if(els.hiddenInput) els.hiddenInput.value = '';
     return;
   }
 
@@ -355,9 +365,27 @@ function onKeyDown(ev) {
     if (isEditableChar(ch)) {
       ev.preventDefault();
       setCharAtActive(ch);
+      if(els.hiddenInput) els.hiddenInput.value = '';
       return;
     }
   }
+}
+
+// Escucha especial para teclados virtuales móviles modernos
+function onHiddenInput(ev) {
+  if (!cw || !state.active) return;
+  const val = ev.target.value;
+  if (!val) return;
+
+  const lastChar = val.substring(val.length - 1);
+  const ch = normalizeLetter(lastChar);
+  
+  if (isEditableChar(ch)) {
+    setCharAtActive(ch);
+  }
+  
+  // Limpiamos el input para estar listos para la siguiente letra
+  ev.target.value = '';
 }
 
 /* ========= Crucigrama carga ========= */
@@ -400,7 +428,11 @@ async function init() {
     renderBoard();
   });
 
+  // Vincular los eventos de teclado
   document.addEventListener('keydown', onKeyDown);
+  if (els.hiddenInput) {
+    els.hiddenInput.addEventListener('input', onHiddenInput);
+  }
 }
 
 async function loadAndStart(file) {
