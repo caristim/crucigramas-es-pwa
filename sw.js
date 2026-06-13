@@ -1,4 +1,4 @@
-const CACHE = 'crucigramas-es-v1';
+const CACHE = 'crucigramas-es-v2'; // Cambiado a v2 para forzar actualización
 const CORE = [
   './',
   './index.html',
@@ -16,6 +16,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
+    // Elimina cachés antiguas automáticamente
     await Promise.all(keys.map(k => (k === CACHE ? null : caches.delete(k))));
     await self.clients.claim();
   })());
@@ -25,19 +26,25 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Estrategia simple:
-  // - Si es del mismo origen, cache-first
-  // - Si no, network
+  // Si es del mismo origen, usamos una estrategia Network-First para los JSON de datos
+  // y Cache-First para los archivos de la app (HTML, CSS, JS)
   if (url.origin === location.origin) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      const cached = await cache.match(req);
-      if (cached) return cached;
-
-      const fresh = await fetch(req);
-      // Cachear crucigramas también
-      if (req.method === 'GET') cache.put(req, fresh.clone());
-      return fresh;
-    })());
+    if (url.pathname.endsWith('.json') || url.pathname.includes('/data/')) {
+      event.respondWith(
+        fetch(req).catch(async () => {
+          const cache = await caches.open(CACHE);
+          return cache.match(req);
+        })
+      );
+    } else {
+      event.respondWith((async () => {
+        const cache = await caches.open(CACHE);
+        const cached = await cache.match(req);
+        if (cached) return cached;
+        const fresh = await fetch(req);
+        if (req.method === 'GET') cache.put(req, fresh.clone());
+        return fresh;
+      })());
+    }
   }
 });
