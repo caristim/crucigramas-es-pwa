@@ -17,18 +17,12 @@
     "across": [
       { "number": 1, "row": 0, "col": 0, "answer": "PLANETA", "clue": "Cuerpo que orbita una estrella" },
       { "number": 3, "row": 0, "col": 6, "answer": "MARTE", "clue": "Planeta rojo del sistema solar" },
-
       { "number": 4, "row": 2, "col": 0, "answer": "ANIMAL", "clue": "Ser vivo no vegetal" },
       { "number": 6, "row": 2, "col": 6, "answer": "RÍO", "clue": "Corriente de agua" },
-
       { "number": 7, "row": 3, "col": 0, "answer": "ESCALA", "clue": "Medida usada en mapas o representación" },
-
       { "number": 8, "row": 4, "col": 1, "answer": "HOMBRE", "clue": "Varón adulto" },
-
       { "number": 9, "row": 5, "col": 0, "answer": "TIERRA", "clue": "Nuestro planeta" },
-
       { "number": 10, "row": 6, "col": 0, "answer": "CIENCIA", "clue": "Conjunto de conocimientos sobre la realidad" },
-
       { "number": 11, "row": 7, "col": 0, "answer": "ESPAÑA", "clue": "País que comparte frontera con Portugal y Francia" }
     ],
     "down": [
