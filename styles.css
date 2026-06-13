@@ -91,7 +91,7 @@ body {
 /* --- Ajustes para hacer el tablero más grande y adaptativo --- */
 .boardWrap {
   width: 100%;
-  max-width: 650px; /* Tamaño máximo expandido para pantallas de PC o tablets */
+  max-width: 650px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -100,54 +100,61 @@ body {
 
 .board {
   display: grid;
-  gap: 3px; /* Separación estética entre casillas */
+  gap: 3px;
   background: var(--grid);
   padding: 6px;
   border-radius: 12px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
   width: 100%;
-  aspect-ratio: 1 / 1; /* Cuadrado perfecto */
+  aspect-ratio: 1 / 1;
 }
 
 .cell {
   position: relative;
   background: var(--panel2);
   border-radius: 4px;
-  transition: all 0.1s ease;
+  transition: all 0.2s ease;
   user-select: none;
 }
 
 /* Estado seleccionada / enfocada */
 .cell.selected {
-  background: rgba(245, 158, 11, 0.2) !important;
+  background: rgba(245, 158, 11, 0.15) !important;
   box-shadow: inset 0 0 0 2px var(--focus);
 }
 
-/* Casillas correctas y erróneas en la comprobación */
+/* Casillas Correctas (Verde vivo) */
 .cell.correct {
-  background: rgba(34, 197, 94, 0.25) !important;
-  box-shadow: inset 0 0 0 1px var(--accent);
+  background: rgba(34, 197, 94, 0.2) !important;
+  box-shadow: inset 0 0 0 2px var(--accent) !important;
+}
+.cell.correct .ch {
+  color: #4ade80 !important;
 }
 
+/* Casillas Erróneas (Rojo vivo) */
 .cell.wrong {
-  background: rgba(239, 68, 68, 0.25) !important;
-  box-shadow: inset 0 0 0 1px var(--danger);
+  background: rgba(239, 68, 68, 0.2) !important;
+  box-shadow: inset 0 0 0 2px var(--danger) !important;
+}
+.cell.wrong .ch {
+  color: #f87171 !important;
 }
 
-/* Tamaño de la letra dentro de la casilla (Agrandado significativamente) */
+/* Tamaño de la letra dentro de la casilla */
 .cell .ch {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(1.2rem, 4.5vw, 1.9rem); /* Escala dinámicamente según la pantalla */
+  font-size: clamp(1.2rem, 4.5vw, 1.9rem);
   font-weight: 800;
   color: var(--text);
   line-height: 1;
 }
 
-/* Ajuste del número de pista pequeño en la esquina superior */
+/* Ajuste del número de pista pequeño */
 .cell .num {
   position: absolute;
   top: 3px;
@@ -158,13 +165,13 @@ body {
   z-index: 2;
 }
 
-/* Estilo para los bloques negros no editables */
+/* Bloques negros */
 .cell.block {
   background: var(--block);
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85);
 }
 
-/* Fila de información de celda activa y botones */
+/* Fila de información */
 .hintRow {
   display: flex;
   justify-content: space-between;
@@ -211,7 +218,7 @@ body {
   filter: brightness(1.15);
 }
 
-/* Barra lateral de pistas y notas */
+/* Barra lateral */
 .side {
   display: flex;
   flex-direction: column;
@@ -231,17 +238,6 @@ body {
   font-weight: 700;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   padding-bottom: 6px;
-}
-
-.list {
-  margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.list li {
-  margin: 6px 0;
 }
 
 .clues {
@@ -266,7 +262,6 @@ body {
   padding-right: 4px;
 }
 
-/* Estilos de barra de scroll para las pistas */
 .clueList::-webkit-scrollbar {
   width: 4px;
 }
