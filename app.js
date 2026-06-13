@@ -8,6 +8,41 @@ function isEditableChar(ch) {
   return /^[A-ZÁÉÍÓÚÜÑ]$/.test(ch);
 }
 
+/* ========= Generador de Sonidos de Sintetizador Nativo ========= */
+function playBeep(type) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    if (type === 'success') {
+      // Pitido alegre ascendente rápido
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // Nota Re5
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08); // Nota La5
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.25);
+    } else if (type === 'error') {
+      // Sonido de error grave sordo
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(130.81, ctx.currentTime); // Nota Do3
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    }
+  } catch (e) {
+    console.log("AudioContext bloqueado o no soportado hasta interacción.");
+  }
+}
+
 /* ========= Estado ========= */
 let cw = null; 
 let state = {
@@ -25,7 +60,7 @@ const els = {
   cluesDown: document.getElementById('cluesDown'),
   checkBtn: document.getElementById('checkBtn'),
   clearBtn: document.getElementById('clearBtn'),
-  hiddenInput: document.getElementById('hiddenInput') // Captura el input oculto
+  hiddenInput: document.getElementById('hiddenInput')
 };
 
 /* ========= Loader ========= */
@@ -125,12 +160,9 @@ function renderBoard() {
         ch.textContent = cell.user || '';
         div.appendChild(ch);
 
-        // Evento adaptado tanto para clics como para pantallas táctiles de smartphone
         div.addEventListener('pointerdown', (ev) => {
           ev.preventDefault();
           selectCell(r, c);
-          
-          // FORZAR TECLADO EN CELULARES: Encasillamos el foco en el input invisible
           if(els.hiddenInput) {
             els.hiddenInput.value = '';
             els.hiddenInput.focus();
@@ -238,9 +270,60 @@ function moveWithinActive(delta) {
   const { r, c, dir } = state.active;
 
   const next = getNextEditableCell(r, c, dir, delta);
-  if (!next) return;
+  if (!next) return false;
 
   selectCell(next.r, next.c);
+  return true;
+}
+
+/* ========= Validación de palabra en tiempo real ========= */
+function checkCurrentWord() {
+  if (!state.active) return;
+  const { dir, entryNumber } = state.active;
+  const start = findEntryStart(dir, entryNumber);
+  if (!start) return;
+
+  const len = start.answer.length;
+  let wordCells = [];
+  let complete = true;
+
+  // Almacenamos todas las celdas físicas de esta palabra específica
+  for (let i = 0; i < len; i++) {
+    const rr = dir === 'across' ? start.row : start.row + i;
+    const cc = dir === 'across' ? start.col + i : start.col;
+    const cell = cellIndex[rr][cc];
+    wordCells.push(cell);
+    if (!cell.user) complete = false; // Falta alguna letra por rellenar
+  }
+
+  // Si la palabra está completamente escrita por el usuario, la evaluamos de inmediato
+  if (complete) {
+    let wordIsCorrect = true;
+    for (let i = 0; i < len; i++) {
+      if (wordCells[i].user !== start.answer[i]) {
+        wordIsCorrect = false;
+        break;
+      }
+    }
+
+    // Disparar efectos y sonidos de respuesta
+    if (wordIsCorrect) {
+      playBeep('success');
+    } else {
+      playBeep('error');
+    }
+
+    // Forzamos actualización visual inmediata para este grupo de celdas
+    for (let i = 0; i < len; i++) {
+      const rr = dir === 'across' ? start.row : start.row + i;
+      const cc = dir === 'across' ? start.col + i : start.col;
+      const div = els.board.querySelector(`.cell[data-r="${rr}"][data-c="${cc}"]`);
+      if (div) {
+        div.classList.remove('correct', 'wrong');
+        div.classList.add(wordIsCorrect ? 'correct' : 'wrong');
+      }
+    }
+  }
 }
 
 /* ========= Input ========= */
@@ -252,9 +335,13 @@ function setCharAtActive(ch) {
 
   cell.user = ch;
   updateCellDom(r, c);
-  if (state.checkMode) applyCheckVisuals();
 
-  moveWithinActive(+1);
+  // Comprobar la palabra antes de saltar a la siguiente celda
+  checkCurrentWord();
+
+  const moved = moveWithinActive(+1);
+  // Si ya no se pudo mover adelante porque terminó el tablero/palabra, re-evaluamos visuals generales
+  if (!moved && state.checkMode) applyCheckVisuals();
 }
 
 function clearAtActive() {
@@ -263,18 +350,21 @@ function clearAtActive() {
   const cell = cellIndex[r][c];
   if (cell.isBlock) return;
 
+  // Al borrar, removemos los estados de acierto/error de esta celda
   cell.user = '';
   updateCellDom(r, c);
+  
+  const div = els.board.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+  if (div) div.classList.remove('correct', 'wrong');
+
   if (state.checkMode) applyCheckVisuals();
 }
 
-/* ========= Comprobación ========= */
+/* ========= Comprobación Global Manual ========= */
 function applyCheckVisuals() {
   els.board.querySelectorAll('.cell').forEach(el => {
     el.classList.remove('wrong', 'correct');
   });
-
-  if (!state.checkMode) return;
 
   const { rows, cols } = cw.size;
   for (let r = 0; r < rows; r++) {
@@ -285,8 +375,11 @@ function applyCheckVisuals() {
       const div = els.board.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
       if (!div) continue;
 
-      if (cell.user === cell.solution) div.classList.add('correct');
-      else div.classList.add('wrong');
+      if (cell.user === cell.solution) {
+        div.classList.add('correct');
+      } else {
+        div.classList.add('wrong');
+      }
     }
   }
 }
@@ -331,12 +424,11 @@ function escapeHtml(s) {
   }[m]));
 }
 
-/* ========= Manejadores de entrada de texto (PC y Celular) ========= */
+/* ========= Keyboard ========= */
 function onKeyDown(ev) {
   if (!cw || !state.active) return;
 
   const tag = (ev.target?.tagName ?? '').toLowerCase();
-  // Permitimos que actúe si el foco viene de nuestro input oculto
   if (tag === 'select' || (tag === 'input' && ev.target.id !== 'hiddenInput') || tag === 'textarea') return;
 
   const key = ev.key;
@@ -371,7 +463,6 @@ function onKeyDown(ev) {
   }
 }
 
-// Escucha especial para teclados virtuales móviles modernos
 function onHiddenInput(ev) {
   if (!cw || !state.active) return;
   const val = ev.target.value;
@@ -383,8 +474,6 @@ function onHiddenInput(ev) {
   if (isEditableChar(ch)) {
     setCharAtActive(ch);
   }
-  
-  // Limpiamos el input para estar listos para la siguiente letra
   ev.target.value = '';
 }
 
@@ -428,7 +517,6 @@ async function init() {
     renderBoard();
   });
 
-  // Vincular los eventos de teclado
   document.addEventListener('keydown', onKeyDown);
   if (els.hiddenInput) {
     els.hiddenInput.addEventListener('input', onHiddenInput);
