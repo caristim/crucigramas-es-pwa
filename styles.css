@@ -1,228 +1,298 @@
-:root{
+:root {
   --bg: #0b1220;
   --panel: #0f172a;
-  --panel2:#0b1326;
+  --panel2: #0b1326;
   --text: #e5e7eb;
-  --muted:#9ca3af;
+  --muted: #9ca3af;
   --grid: #1f2a44;
   --block: #0a0f1e;
-  --accent:#22c55e;
-  --accent2:#60a5fa;
-  --danger:#ef4444;
-  --focus:#f59e0b;
+  --accent: #22c55e;
+  --accent2: #60a5fa;
+  --danger: #ef4444;
+  --focus: #f59e0b;
 }
 
-*{ box-sizing: border-box; }
-body{
-  margin:0;
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background: linear-gradient(180deg, #0a1226, var(--bg));
   color: var(--text);
+  min-height: 100vh;
 }
 
-.topbar{
-  display:flex;
+.topbar {
+  display: flex;
   justify-content: space-between;
-  align-items:center;
-  gap:12px;
+  align-items: center;
+  gap: 12px;
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  background: rgba(2,6,23,.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(2, 6, 23, 0.55);
   backdrop-filter: blur(8px);
   position: sticky;
-  top:0;
+  top: 0;
   z-index: 5;
 }
 
-.brand{
-  font-weight: 700;
-  letter-spacing: .2px;
-}
-
-.controls{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.label{ color: var(--muted); font-size: 14px; }
-.select{
-  background: var(--panel);
-  border: 1px solid rgba(255,255,255,.12);
-  color: var(--text);
-  padding: 8px 10px;
-  border-radius: 10px;
-  outline:none;
-}
-
-.layout{
-  display:grid;
-  grid-template-columns: 1fr 340px;
-  gap: 14px;
-  padding: 14px 14px 24px;
-}
-
-.boardWrap{
-  background: rgba(15,23,42,.65);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 14px;
-  padding: 14px;
-}
-
-.board{
-  width: 100%;
-  display:grid;
-  gap: 4px;
-  justify-content: center;
-  padding: 10px;
-  border-radius: 12px;
-  background: rgba(2,6,23,.35);
-  border: 1px solid rgba(255,255,255,.06);
-}
-
-.cell{
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(31,42,68,.35);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position: relative;
-  user-select:none;
-  touch-action: manipulation;
-}
-
-.cell.block{
-  background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
-  border-color: rgba(255,255,255,.06);
-}
-
-.cell .num{
-  position:absolute;
-  top:4px;
-  left:6px;
-  font-size: 11px;
-  color: rgba(229,231,235,.85);
-}
-
-.cell .ch{
-  font-size: 18px;
+.brand {
   font-weight: 800;
-  letter-spacing: .5px;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+  background: linear-gradient(to right, #fff, var(--muted));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.select {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
 }
 
-.cell.editable{
-  cursor: text;
+.select:focus {
+  border-color: var(--accent2);
 }
 
-.cell.selected{
-  outline: 3px solid rgba(245,158,11,.9);
-  outline-offset: 0px;
-  border-color: rgba(245,158,11,.2);
-  background: rgba(245,158,11,.10);
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.cell.wrong{
-  background: rgba(239,68,68,.18);
-  border-color: rgba(239,68,68,.45);
+@media (min-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr 340px;
+  }
 }
 
-.cell.correct{
-  background: rgba(34,197,94,.16);
-  border-color: rgba(34,197,94,.45);
+/* --- Ajustes para hacer el tablero más grande y adaptativo --- */
+.boardWrap {
+  width: 100%;
+  max-width: 650px; /* Tamaño máximo expandido para pantallas de PC o tablets */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.hintRow{
-  margin-top: 12px;
-  display:flex;
+.board {
+  display: grid;
+  gap: 3px; /* Separación estética entre casillas */
+  background: var(--grid);
+  padding: 6px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Cuadrado perfecto */
+}
+
+.cell {
+  position: relative;
+  background: var(--panel2);
+  border-radius: 4px;
+  transition: all 0.1s ease;
+  user-select: none;
+}
+
+/* Estado seleccionada / enfocada */
+.cell.selected {
+  background: rgba(245, 158, 11, 0.2) !important;
+  box-shadow: inset 0 0 0 2px var(--focus);
+}
+
+/* Casillas correctas y erróneas en la comprobación */
+.cell.correct {
+  background: rgba(34, 197, 94, 0.25) !important;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.cell.wrong {
+  background: rgba(239, 68, 68, 0.25) !important;
+  box-shadow: inset 0 0 0 1px var(--danger);
+}
+
+/* Tamaño de la letra dentro de la casilla (Agrandado significativamente) */
+.cell .ch {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.2rem, 4.5vw, 1.9rem); /* Escala dinámicamente según la pantalla */
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+/* Ajuste del número de pista pequeño en la esquina superior */
+.cell .num {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-size: clamp(0.6rem, 1.8vw, 0.85rem);
+  font-weight: 600;
+  color: var(--muted);
+  z-index: 2;
+}
+
+/* Estilo para los bloques negros no editables */
+.cell.block {
+  background: var(--block);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85);
+}
+
+/* Fila de información de celda activa y botones */
+.hintRow {
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  gap:10px;
   flex-wrap: wrap;
-}
-
-.activeInfo{
-  color: var(--muted);
-  font-size: 14px;
-  display:flex;
-  gap:18px;
-  align-items:center;
-}
-
-.k{ color: rgba(229,231,235,.9); font-weight:700; }
-
-.buttons{ display:flex; gap:10px; }
-.btn, .btn.secondary{
-  padding: 10px 12px;
+  gap: 12px;
+  background: var(--panel);
+  padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(34,197,94,.15);
-  color: var(--text);
-  cursor:pointer;
-  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
-.btn.secondary{
-  background: rgba(96,165,250,.12);
-}
-.btn:hover{ filter: brightness(1.05); }
 
-.side{ display:flex; flex-direction: column; gap:14px; }
-.panel{
-  background: rgba(15,23,42,.55);
-  border: 1px solid rgba(255,255,255,.08);
+.activeInfo {
+  font-size: 14px;
+}
+
+.activeInfo .k {
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.btn.secondary {
+  background: rgba(96, 165, 250, 0.12);
+}
+
+.btn:hover {
+  filter: brightness(1.15);
+}
+
+/* Barra lateral de pistas y notas */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panel {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 14px;
 }
-.panel h2{
-  margin: 0 0 10px;
+
+.panel h2 {
+  margin: 0 0 12px;
   font-size: 16px;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 6px;
 }
-.list{ margin:0; padding-left: 18px; color: var(--muted); }
-.list li{ margin: 8px 0; }
 
-.clues{ display:grid; grid-template-columns: 1fr; gap: 12px; }
-.clueGroup{ }
-.clueTitle{
-  color: rgba(229,231,235,.9);
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-.clueList{
-  max-height: 280px;
-  overflow:auto;
-  padding-right: 4px;
-}
-.clueItem{
-  padding: 8px 10px;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  background: rgba(2,6,23,.25);
-  border: 1px solid rgba(255,255,255,.06);
-}
-.clueItem .n{
-  font-weight: 900;
-  color: rgba(229,231,235,.95);
-  margin-right: 8px;
-}
-.clueItem .t{
+.list {
+  margin: 0;
+  padding-left: 18px;
   color: var(--muted);
-  font-size: 14px;
-}
-
-.footer{
-  padding: 18px 16px 26px;
-  color: rgba(229,231,235,.6);
-  text-align:center;
   font-size: 13px;
 }
 
-@media (max-width: 980px){
-  .layout{ grid-template-columns: 1fr; }
-  .side{ order: 2; }
+.list li {
+  margin: 6px 0;
 }
-@media (max-width: 420px){
-  .cell{ width: 30px; height: 30px; }
+
+.clues {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.clueTitle {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent2);
+  margin-bottom: 6px;
+}
+
+.clueList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Estilos de barra de scroll para las pistas */
+.clueList::-webkit-scrollbar {
+  width: 4px;
+}
+.clueList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.clueItem {
+  font-size: 13px;
+  line-height: 1.4;
+  display: flex;
+  gap: 6px;
+}
+
+.clueItem .n {
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 20px;
+}
+
+.footer {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--muted);
+  font-size: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 40px;
 }
