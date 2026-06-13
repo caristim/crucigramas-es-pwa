@@ -5,20 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Crucigramas PWA</title>
   
-  <!-- Enlace de estilos unificado y con rompe-cachés -->
   <link rel="stylesheet" href="styles.css?v=2" />
   
-  <!-- Manifiesto de la PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
   
-  <!-- Configuración básica para dispositivos iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0b1220" />
 </head>
 <body>
 
-  <!-- Barra superior con controles de selección -->
+  <input type="text" id="hiddenInput" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" style="position: absolute; opacity: 0; left: -9999px; top: 0; width: 1px; height: 1px; font-size: 16px;" />
+
   <header class="topbar">
     <div class="brand">Crucigramas ES</div>
     <div class="controls">
@@ -29,12 +27,9 @@
     </div>
   </header>
 
-  <!-- Layout Principal de la Aplicación -->
   <main class="layout">
     
-    <!-- Zona del Tablero y Controles de Estado -->
     <section class="boardWrap">
-      <!-- Mensaje informativo sobre la casilla y dirección actual -->
       <div class="hintRow">
         <div class="activeInfo">
           <span class="k">Dirección:</span><span id="dirText" style="font-weight:700; color:var(--accent2);">—</span>
@@ -46,11 +41,9 @@
         </div>
       </div>
 
-      <!-- Cuadrícula del Tablero (Se genera dinámicamente) -->
       <div id="board" class="board"></div>
     </section>
 
-    <!-- Barra lateral con el listado de pistas -->
     <aside class="side">
       <div class="panel">
         <h2>Pistas del Juego</h2>
@@ -69,12 +62,10 @@
 
   </main>
 
-  <!-- Pie de página informativo -->
   <footer class="footer">
     <p>Crucigramas PWA - Optimizado para PC y Smartphones</p>
   </footer>
 
-  <!-- Registro del Service Worker (Opcional si deseas mantenerlo en background) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -85,8 +76,7 @@
     }
   </script>
 
-  <!-- Importación de la lógica con el parámetro rompe-cachés v=2 -->
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 
 </body>
 </html>
