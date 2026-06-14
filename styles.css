@@ -1,11 +1,11 @@
 :root {
   --bg: #0b1220;
   --panel: #0f172a;
-  --panel2: #1e293b; /* Color visible para las casillas de escribir */
+  --panel2: #1e293b; 
   --text: #e5e7eb;
   --muted: #9ca3af;
-  --grid: #334155; /* Bordes que separan las casillas */
-  --block: #050811; /* Súper oscuro para las casillas inactivas sin letras */
+  --grid: #334155; 
+  --block: #050811; 
   --accent: #22c55e;
   --accent2: #38bdf8;
   --danger: #ef4444;
@@ -108,7 +108,6 @@ body {
   aspect-ratio: 1 / 1;
 }
 
-/* Casillas con Letras (Altamente visibles) */
 .cell.editable {
   position: relative;
   background: var(--panel2);
@@ -118,7 +117,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Casillas Ciegas/Negras (Sin Letras) */
 .cell.block {
   background: var(--block);
   box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.95);
