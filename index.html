@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Crucigramas PWA</title>
   
-  <link rel="stylesheet" href="styles.css?v=10" />
+  <!-- Enlace de estilos unificado con rompe-cachés v=11 -->
+  <link rel="stylesheet" href="styles.css?v=11" />
   
+  <!-- Manifiesto de la PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -15,8 +17,10 @@
 </head>
 <body>
 
+  <!-- INPUT OCULTO PARA FORZAR EL TECLADO EN CELULARES -->
   <input type="text" id="hiddenInput" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" style="position: absolute; opacity: 0; left: -9999px; top: 0; width: 1px; height: 1px; font-size: 16px;" />
 
+  <!-- Barra superior con información del nivel -->
   <header class="topbar">
     <div class="brand">Crucigramas Pro</div>
     <div class="controls">
@@ -24,8 +28,10 @@
     </div>
   </header>
 
+  <!-- Layout Principal -->
   <main class="layout">
     
+    <!-- Tablero y Controles de Estado -->
     <section class="boardWrap">
       <div class="hintRow" style="align-items: center; gap: 12px;">
         <div class="activeInfo" style="flex: 1; min-width: 200px;">
@@ -40,14 +46,15 @@
         
         <div class="buttons" style="display: flex; gap: 6px;">
           <button id="checkBtn" class="btn" style="padding: 8px 12px; font-size: 13px;">Comprobar</button>
-          
           <button id="nextLevelBtn" class="btn" style="background: rgba(34, 197, 94, 0.25); border-color: var(--accent); padding: 8px 12px; font-size: 13px;">Siguiente nivel ➡️</button>
         </div>
       </div>
 
+      <!-- Cuadrícula Dinámica -->
       <div id="board" class="board"></div>
     </section>
 
+    <!-- Barra lateral de pistas -->
     <aside class="side">
       <div class="panel">
         <h2>Pistas del Nivel</h2>
@@ -66,8 +73,12 @@
 
   </main>
 
+  <!-- PIE DE PÁGINA CON CRÉDITOS EN LETRA PEQUEÑA -->
   <footer class="footer">
-    <p>Crucigramas Secuenciales Infinitos - Dificultad Gradual</p>
+    <p style="margin-bottom: 4px;">Crucigramas Secuenciales Infinitos - Dificultad Gradual</p>
+    <p style="font-size: 11px; color: var(--muted); opacity: 0.8; letter-spacing: 0.02em;">
+      Creación: Carlos Aristimuño - Idea: Rosario Granja 2026
+    </p>
   </footer>
 
   <script>
@@ -78,7 +89,8 @@
     }
   </script>
 
-  <script src="app.js?v=10"></script>
+  <!-- Lógica enlazada con incremento rompe-cachés v=11 -->
+  <script src="app.js?v=11"></script>
 
 </body>
 </html>
