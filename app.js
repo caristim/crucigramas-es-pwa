@@ -1,7 +1,118 @@
-/* ========= Util ========= */
+/* ========= Catálogo de niveles de internet con dificultad incremental ========= */
+const REMOTE_LEVELS = [
+  {
+    title: "Nivel 1: Inicial Rápido (7x7)",
+    size: { rows: 7, cols: 7 },
+    grid: [
+      "......#",
+      ".#.#.#.",
+      ".......",
+      ".#.#.#.",
+      ".......",
+      ".#.#.#.",
+      "#......"
+    ],
+    entries: {
+      across: [
+        { number: 1, row: 0, col: 0, answer: "MADRID", clue: "Capital del Reino de España" },
+        { number: 4, row: 2, col: 0, answer: "AMERICA", clue: "Continente rodeado por los océanos Atlántico y Pacífico" },
+        { number: 6, row: 4, col: 0, answer: "PLANETA", clue: "Cuerpo masivo que gira en órbita regular en torno a una estrella" },
+        { number: 7, row: 6, col: 1, answer: "SOLARES", clue: "Sistemas o paneles que aprovechan la radiación lumínica" }
+      ],
+      down: [
+        { number: 1, row: 0, col: 0, answer: "MAPA", clue: "Esquema gráfico o representación plana de la superficie terrestre" },
+        { number: 2, row: 0, col: 2, answer: "DIETA", clue: "Conjunto de alimentos y nutrientes consumidos habitualmente" },
+        { number: 3, row: 0, col: 4, answer: "IMAN", clue: "Objeto ferromagnético con capacidad de atracción natural" },
+        { number: 5, row: 2, col: 6, answer: "ALTAS", clue: "Personas u objetos con una altura superior al promedio" }
+      ]
+    }
+  },
+  {
+    title: "Nivel 2: Desafío Básico (8x8)",
+    size: { rows: 8, cols: 8 },
+    grid: [
+      ".......#",
+      ".#.#.#.#",
+      "........",
+      ".#.#.#.#",
+      "........",
+      ".#.#.#.#",
+      "........",
+      "#.#.#.#."
+    ],
+    entries: {
+      across: [
+        { number: 1, row: 0, col: 0, answer: "LONDRES", clue: "Capital del Reino Unido, famosa por el Big Ben" },
+        { number: 3, row: 2, col: 0, answer: "FRANCIA", clue: "País europeo cuna de la Torre Eiffel y el buen queso" },
+        { number: 5, row: 4, col: 0, answer: "PLANETA", clue: "Cuerpo celeste como la Tierra o Júpiter" },
+        { number: 6, row: 6, col: 0, answer: "ESCUELA", clue: "Establecimiento público donde se enseña a los alumnos" }
+      ],
+      down: [
+        { number: 1, row: 0, col: 0, answer: "LUPA", clue: "Lente óptica usada para ampliar la visión de objetos chicos" },
+        { number: 2, row: 0, col: 2, description: "", answer: "DIARIO", clue: "Periódico de publicación cotidiana impreso o digital" },
+        { number: 3, row: 0, col: 4, answer: "RANA", clue: "Anfibio pequeño saltador de piel húmeda que croa" },
+        { number: 4, row: 0, col: 6, answer: "SALA", clue: "Espacio o estancia principal de una vivienda" }
+      ]
+    }
+  },
+  {
+    title: "Nivel 3: Crucigrama Estándar (9x9)",
+    size: { rows: 9, cols: 9 },
+    grid: [
+      ".........",
+      "#.#.#.#.#",
+      ".........",
+      "#.#.#.#.#",
+      ".........",
+      "#.#.#.#.#",
+      ".........",
+      "#.#.#.#.#",
+      "........."
+    ],
+    entries: {
+      across: [
+        { number: 1, row: 0, col: 0, answer: "ARGENTINA", clue: "País sudamericano famoso por el tango, el mate y Maradona" },
+        { number: 4, row: 2, col: 0, answer: "BARCELONA", clue: "Ciudad de España conocida por las obras arquitectónicas de Gaudí" },
+        { number: 6, row: 4, col: 0, answer: "CHOCOLATE", clue: "Alimento dulce obtenido de mezclar azúcar con pasta de cacao" },
+        { number: 7, row: 6, col: 0, answer: "DROMEDARIO", clue: "Animal rumiante similar al camello pero con una sola joroba" },
+        { number: 8, row: 8, col: 0, answer: "EDUCACION", clue: "Proceso de socialización y aprendizaje formal de las personas" }
+      ],
+      down: [
+        { number: 1, row: 0, col: 0, answer: "ABC", clue: "Las tres primeras letras que abren el abecedario" },
+        { number: 2, row: 0, col: 2, answer: "GARABATO", clue: "Trazo irregular hecho con el lápiz que no tiene sentido" },
+        { number: 3, row: 0, col: 4, answer: "NOCION", clue: "Idea o conocimiento elemental que se posee sobre algo" },
+        { number: 5, row: 0, col: 6, answer: "ATAR", clue: "Sujetar o amarrar un objeto utilizando cuerdas o lazos" }
+      ]
+    }
+  }
+];
+
+/* ========= Estado de la App ========= */
+let currentLevelIndex = 0; 
+let cw = null; 
+let state = {
+  active: null, 
+  dirPreferred: 'across', 
+  checkMode: false
+};
+let cellIndex = null; 
+
+const els = {
+  board: document.getElementById('board'),
+  levelIndicator: document.getElementById('levelIndicator'),
+  dirText: document.getElementById('dirText'),
+  entryText: document.getElementById('entryText'),
+  cluesAcross: document.getElementById('cluesAcross'),
+  cluesDown: document.getElementById('cluesDown'),
+  checkBtn: document.getElementById('checkBtn'),
+  toggleDirBtn: document.getElementById('toggleDirBtn'),
+  nextLevelBtn: document.getElementById('nextLevelBtn'),
+  hiddenInput: document.getElementById('hiddenInput')
+};
+
+/* ========= Lógica de Normalización ========= */
 const normalizeLetter = (s) => {
   if (!s) return '';
-  // Convertimos a mayúsculas y removemos acentos automáticamente para evitar fallos de escritura
   return s.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
 
@@ -9,90 +120,22 @@ function isEditableChar(ch) {
   return /^[A-ZÑ]$/.test(ch);
 }
 
-/* ========= Generador de Sonidos de Sintetizador Nativo ========= */
-function playBeep(type) {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    if (type === 'success') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); 
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08); 
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } else if (type === 'error') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(130.81, ctx.currentTime); 
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-    }
-  } catch (e) {
-    console.log("AudioContext bloqueado.");
-  }
-}
-
-/* ========= Estado ========= */
-let cw = null; 
-let state = {
-  active: null, 
-  dirPreferred: 'across', 
-  checkMode: false
-};
-
-const els = {
-  board: document.getElementById('board'),
-  cwSelect: document.getElementById('cwSelect'),
-  dirText: document.getElementById('dirText'),
-  entryText: document.getElementById('entryText'),
-  cluesAcross: document.getElementById('cluesAcross'),
-  cluesDown: document.getElementById('cluesDown'),
-  checkBtn: document.getElementById('checkBtn'),
-  clearBtn: document.getElementById('clearBtn'),
-  hiddenInput: document.getElementById('hiddenInput')
-};
-
-/* ========= Loader ========= */
-async function loadIndex() {
-  const res = await fetch('./data/index.json');
-  if (!res.ok) throw new Error('No se pudo cargar ./data/index.json');
-  return res.json();
-}
-
-async function loadCrossword(file) {
-  const res = await fetch(`./data/crosswords/${file}`);
-  if (!res.ok) throw new Error(`No se pudo cargar ${file}`);
-  return res.json();
-}
-
-/* ========= Modelado del tablero ========= */
-function buildCellIndex(cw) {
-  const { rows, cols } = cw.size;
+/* ========= Modelado de Tablero ========= */
+function buildCellIndex(levelData) {
+  const { rows, cols } = levelData.size;
   const cell = Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => ({
       r, c,
-      isBlock: cw.grid[r][c] === '#',
+      isBlock: levelData.grid[r][c] === '#',
       number: null,
       solution: null, 
-      clueNumberAcross: null,
-      clueNumberDown: null,
       belongs: { across: null, down: null }, 
       user: ''
     }))
   );
 
-  const across = cw.entries?.across ?? [];
-  const down = cw.entries?.down ?? [];
+  const across = levelData.entries?.across ?? [];
+  const down = levelData.entries?.down ?? [];
 
   for (const e of across) {
     const { number, row, col, answer } = e;
@@ -100,9 +143,9 @@ function buildCellIndex(cw) {
       const rr = row;
       const cc = col + i;
       if (!cell[rr] || !cell[rr][cc] || cell[rr][cc].isBlock) continue;
-      if (cell[rr][cc].solution == null) cell[rr][cc].solution = normalizeLetter(answer[i]);
+      cell[rr][cc].solution = normalizeLetter(answer[i]);
       cell[rr][cc].belongs.across = { entryNumber: number, index: i };
-      if (i === 0) cell[rr][cc].clueNumberAcross = number;
+      if (i === 0) cell[rr][cc].number = number;
     }
   }
 
@@ -112,26 +155,16 @@ function buildCellIndex(cw) {
       const rr = row + i;
       const cc = col;
       if (!cell[rr] || !cell[rr][cc] || cell[rr][cc].isBlock) continue;
-      if (cell[rr][cc].solution == null) cell[rr][cc].solution = normalizeLetter(answer[i]);
+      cell[rr][cc].solution = normalizeLetter(answer[i]);
       cell[rr][cc].belongs.down = { entryNumber: number, index: i };
-      if (i === 0) cell[rr][cc].clueNumberDown = number;
-    }
-  }
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const a = cell[r][c].clueNumberAcross;
-      const d = cell[r][c].clueNumberDown;
-      if (a != null || d != null) cell[r][c].number = a ?? d;
+      if (i === 0 && cell[rr][cc].number === null) cell[rr][cc].number = number;
     }
   }
 
   return cell;
 }
 
-/* ========= Render ========= */
-let cellIndex = null; 
-
+/* ========= Renderizado ========= */
 function renderBoard() {
   const { rows, cols } = cw.size;
   els.board.innerHTML = '';
@@ -162,17 +195,12 @@ function renderBoard() {
         div.addEventListener('pointerdown', (ev) => {
           ev.preventDefault();
           selectCell(r, c);
-          if(els.hiddenInput) {
-            els.hiddenInput.value = '';
-            els.hiddenInput.focus();
-          }
+          if(els.hiddenInput) { els.hiddenInput.value = ''; els.hiddenInput.focus(); }
         });
       }
-
       els.board.appendChild(div);
     }
   }
-
   applyCheckVisuals();
   updateActiveInfo();
 }
@@ -183,7 +211,7 @@ function updateCellDom(r, c) {
   if (target) target.textContent = cellIndex[r][c].user || '';
 }
 
-/* ========= Selección ========= */
+/* ========= Selección y Control de Dirección ========= */
 function cellToPossibleDirs(r, c) {
   if (!cellIndex[r] || !cellIndex[r][c]) return [];
   const cell = cellIndex[r][c];
@@ -194,7 +222,7 @@ function cellToPossibleDirs(r, c) {
   return dirs;
 }
 
-function selectCell(r, c) {
+function selectCell(r, c, forceDir = null) {
   if (!cellIndex[r] || !cellIndex[r][c]) return;
   const cell = cellIndex[r][c];
   if (cell.isBlock) return;
@@ -202,359 +230,172 @@ function selectCell(r, c) {
   const possible = cellToPossibleDirs(r, c);
   if (possible.length === 0) return;
 
-  let dir;
-  if (possible.length === 1) dir = possible[0];
-  else {
-    dir = state.dirPreferred;
-    if (!possible.includes(dir)) dir = possible[0];
+  let dir = forceDir;
+  if (!dir) {
+    dir = possible.includes(state.dirPreferred) ? state.dirPreferred : possible[0];
   }
 
-  state.active = getActiveEntryFromCell(r, c, dir);
-  state.dirPreferred = dir; 
+  const entry = dir === 'across' ? cell.belongs.across : cell.belongs.down;
+  state.active = { r, c, dir, entryNumber: entry.entryNumber, indexInEntry: entry.index };
+  state.dirPreferred = dir;
+
   updateActiveInfo();
   renderActiveHighlight();
 }
 
-function getActiveEntryFromCell(r, c, dir) {
-  const cell = cellIndex[r][c];
-  const entry = dir === 'across' ? cell.belongs.across : cell.belongs.down;
-  return {
-    r, c,
-    dir,
-    entryNumber: entry.entryNumber,
-    indexInEntry: entry.index
-  };
+function toggleDirection() {
+  if (!state.active) return;
+  const { r, c, dir } = state.active;
+  const possible = cellToPossibleDirs(r, c);
+  if (possible.length > 1) {
+    selectCell(r, c, dir === 'across' ? 'down' : 'across');
+  }
 }
 
 function renderActiveHighlight() {
   els.board.querySelectorAll('.cell.selected').forEach(el => el.classList.remove('selected'));
   if (!state.active) return;
-
-  const { r, c } = state.active;
-  const target = els.board.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+  const target = els.board.querySelector(`.cell[data-r="${state.active.r}"][data-c="${state.active.c}"]`);
   if (target) target.classList.add('selected');
 }
 
-/* ========= Navegación ========= */
-function getNextEditableCell(r, c, dir, delta) {
-  if (!cellIndex[r] || !cellIndex[r][c]) return null;
-  const cell = cellIndex[r][c];
-  const belongs = dir === 'across' ? cell.belongs.across : cell.belongs.down;
-  if (!belongs) return null;
-
-  const nextIndex = belongs.index + delta;
-  const start = findEntryStart(dir, belongs.entryNumber);
-  if (!start) return null;
-
-  if (dir === 'across') {
-    const rr = start.row;
-    const cc = start.col + nextIndex;
-    if (cc < 0 || cc >= cw.size.cols) return null;
-    return { r: rr, c: cc };
-  } else {
-    const rr = start.row + nextIndex;
-    const cc = start.col;
-    if (rr < 0 || rr >= cw.size.rows) return null;
-    return { r: rr, c: cc };
-  }
-}
-
-function findEntryStart(dir, entryNumber) {
-  const list = dir === 'across' ? (cw.entries?.across ?? []) : (cw.entries?.down ?? []);
-  return list.find(e => e.number === entryNumber) ?? null;
-}
-
+/* ========= Avance Automático de Casilla ========= */
 function moveWithinActive(delta) {
-  if (!state.active) return false;
-  const { r, c, dir } = state.active;
-
-  const next = getNextEditableCell(r, c, dir, delta);
-  if (!next) return false;
-
-  selectCell(next.r, next.c);
-  return true;
-}
-
-/* ========= Validación de palabra en tiempo real ========= */
-function checkCurrentWord() {
   if (!state.active) return;
-  const { dir, entryNumber } = state.active;
-  const start = findEntryStart(dir, entryNumber);
-  if (!start) return;
+  const { dir, entryNumber, indexInEntry } = state.active;
+  const nextIndex = indexInEntry + delta;
 
-  const len = start.answer.length;
-  let wordCells = [];
-  let complete = true;
+  const list = dir === 'across' ? cw.entries.across : cw.entries.down;
+  const entry = list.find(e => e.number === entryNumber);
+  if (!entry || nextIndex < 0 || nextIndex >= entry.answer.length) return;
 
-  for (let i = 0; i < len; i++) {
-    const rr = dir === 'across' ? start.row : start.row + i;
-    const cc = dir === 'across' ? start.col + i : start.col;
-    const cell = cellIndex[rr][cc];
-    wordCells.push(cell);
-    if (!cell.user) complete = false; 
-  }
-
-  if (complete) {
-    let wordIsCorrect = true;
-    for (let i = 0; i < len; i++) {
-      if (wordCells[i].user !== normalizeLetter(start.answer[i])) {
-        wordIsCorrect = false;
-        break;
-      }
-    }
-
-    if (wordIsCorrect) {
-      playBeep('success');
-    } else {
-      playBeep('error');
-    }
-
-    for (let i = 0; i < len; i++) {
-      const rr = dir === 'across' ? start.row : start.row + i;
-      const cc = dir === 'across' ? start.col + i : start.col;
-      const div = els.board.querySelector(`.cell[data-r="${rr}"][data-c="${cc}"]`);
-      if (div) {
-        div.classList.remove('correct', 'wrong');
-        div.classList.add(wordIsCorrect ? 'correct' : 'wrong');
-      }
-    }
-  }
+  const rr = dir === 'across' ? entry.row : entry.row + nextIndex;
+  const cc = dir === 'across' ? entry.col + nextIndex : entry.col;
+  selectCell(rr, cc, dir);
 }
 
-/* ========= Input ========= */
+/* ========= Escritura y Teclas ========= */
 function setCharAtActive(ch) {
   if (!state.active) return;
   const { r, c } = state.active;
-  const cell = cellIndex[r][c];
-  if (cell.isBlock) return;
-
-  cell.user = ch;
+  cellIndex[r][c].user = ch;
   updateCellDom(r, c);
-
-  checkCurrentWord();
-
-  const moved = moveWithinActive(+1);
-  if (!moved && state.checkMode) applyCheckVisuals();
+  if (state.checkMode) applyCheckVisuals();
+  moveWithinActive(+1);
 }
 
 function clearAtActive() {
   if (!state.active) return;
   const { r, c } = state.active;
-  const cell = cellIndex[r][c];
-  if (cell.isBlock) return;
-
-  cell.user = '';
+  cellIndex[r][c].user = '';
   updateCellDom(r, c);
-  
   const div = els.board.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
   if (div) div.classList.remove('correct', 'wrong');
-
-  if (state.checkMode) applyCheckVisuals();
+  moveWithinActive(-1);
 }
 
-/* ========= Comprobación Global Manual ========= */
 function applyCheckVisuals() {
-  els.board.querySelectorAll('.cell').forEach(el => {
-    el.classList.remove('wrong', 'correct');
-  });
+  els.board.querySelectorAll('.cell').forEach(el => el.classList.remove('wrong', 'correct'));
+  if (!state.checkMode) return;
 
-  const { rows, cols } = cw.size;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
+  for (let r = 0; r < cw.size.rows; r++) {
+    for (let c = 0; c < cw.size.cols; c++) {
       const cell = cellIndex[r][c];
-      if (cell.isBlock || !cell.user || !cell.solution) continue;
-
+      if (cell.isBlock || !cell.user) continue;
       const div = els.board.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
-      if (!div) continue;
-
-      if (cell.user === cell.solution) {
-        div.classList.add('correct');
-      } else {
-        div.classList.add('wrong');
-      }
+      if (div) div.classList.add(cell.user === cell.solution ? 'correct' : 'wrong');
     }
   }
 }
 
 function updateActiveInfo() {
   if (!state.active) {
-    els.dirText.textContent = '—';
-    els.entryText.textContent = '—';
-    return;
+    els.dirText.textContent = '—'; els.entryText.textContent = '—'; return;
   }
   const { dir, entryNumber, indexInEntry } = state.active;
   els.dirText.textContent = dir === 'across' ? 'Horizontal' : 'Vertical';
-  
-  // Buscar la pista correspondiente para pintarla arriba de forma amigable
-  const start = findEntryStart(dir, entryNumber);
-  const clueString = start ? start.clue : '—';
-  els.entryText.textContent = `Pista ${entryNumber}: "${clueString}" (letra ${indexInEntry + 1})`;
+  const list = dir === 'across' ? cw.entries.across : cw.entries.down;
+  const entry = list.find(e => e.number === entryNumber);
+  els.entryText.textContent = entry ? `Pista ${entryNumber}: "${entry.clue}" (Letra ${indexInEntry + 1})` : '—';
 }
 
-/* ========= Pistas ========= */
+/* ========= Renderizado de Pistas ========= */
 function renderClues() {
-  const across = cw.entries?.across ?? [];
-  const down = cw.entries?.down ?? [];
-
-  els.cluesAcross.innerHTML = '';
-  els.cluesDown.innerHTML = '';
-
-  const renderList = (container, list) => {
-    const frag = document.createDocumentFragment();
+  els.cluesAcross.innerHTML = ''; els.cluesDown.innerHTML = '';
+  const generate = (container, list, dir) => {
     for (const e of list) {
-      const item = document.createElement('div');
-      item.className = 'clueItem';
-      item.innerHTML = `<span class="n">${e.number}.</span><span class="t">${escapeHtml(e.clue ?? '')}</span>`;
-      frag.appendChild(item);
+      const div = document.createElement('div');
+      div.className = 'clueItem';
+      div.style.cursor = 'pointer';
+      div.innerHTML = `<span class="n">${e.number}.</span><span class="t">${e.clue}</span>`;
+      div.addEventListener('click', () => selectCell(e.row, e.col, dir));
+      container.appendChild(div);
     }
-    container.appendChild(frag);
   };
-
-  renderList(els.cluesAcross, across);
-  renderList(els.cluesDown, down);
+  generate(els.cluesAcross, cw.entries.across, 'across');
+  generate(els.cluesDown, cw.entries.down, 'down');
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (m) => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-  }[m]));
-}
+/* ========= Control de Flujo de Niveles ========= */
+function startLevel(index) {
+  currentLevelIndex = index % REMOTE_LEVELS.length; 
+  cw = REMOTE_LEVELS[currentLevelIndex];
 
-/* ========= Keyboard ========= */
-function onKeyDown(ev) {
-  if (!cw || !state.active) return;
+  state.active = null;
+  state.dirPreferred = 'across';
+  state.checkMode = false;
+  els.checkBtn.textContent = 'Comprobar';
+  els.levelIndicator.textContent = `Nivel ${currentLevelIndex + 1}: ${cw.size.rows}x${cw.size.cols}`;
 
-  const tag = (ev.target?.tagName ?? '').toLowerCase();
-  if (tag === 'select' || (tag === 'input' && ev.target.id !== 'hiddenInput') || tag === 'textarea') return;
+  cellIndex = buildCellIndex(cw);
+  renderClues();
+  renderBoard();
 
-  const key = ev.key;
-
-  if (key === 'Backspace') {
-    ev.preventDefault();
-    clearAtActive();
-    moveWithinActive(-1); 
-    if(els.hiddenInput) els.hiddenInput.value = '';
-    return;
-  }
-
-  if (key === 'ArrowLeft') { ev.preventDefault(); if (state.active.dir === 'across') moveWithinActive(-1); return; }
-  if (key === 'ArrowRight') { ev.preventDefault(); if (state.active.dir === 'across') moveWithinActive(+1); return; }
-  if (key === 'ArrowUp') { ev.preventDefault(); if (state.active.dir === 'down') moveWithinActive(-1); return; }
-  if (key === 'ArrowDown') { ev.preventDefault(); if (state.active.dir === 'down') moveWithinActive(+1); return; }
-
-  if (key === 'Tab') {
-    ev.preventDefault();
-    moveWithinActive(ev.shiftKey ? -1 : +1);
-    return;
-  }
-
-  if (key && key.length === 1) {
-    const ch = normalizeLetter(key);
-    if (isEditableChar(ch)) {
-      ev.preventDefault();
-      setCharAtActive(ch);
-      if(els.hiddenInput) els.hiddenInput.value = '';
-      return;
+  // Buscar primera casilla para auto-seleccionar
+  for (let r = 0; r < cw.size.rows; r++) {
+    for (let c = 0; c < cw.size.cols; c++) {
+      if (!cellIndex[r][c].isBlock) { selectCell(r, c); return; }
     }
   }
 }
 
-function onHiddenInput(ev) {
-  if (!cw || !state.active) return;
-  const val = ev.target.value;
-  if (!val) return;
-
-  const lastChar = val.substring(val.length - 1);
-  const ch = normalizeLetter(lastChar);
+/* ========= Eventos e Inicialización ========= */
+function init() {
+  els.toggleDirBtn.addEventListener('click', (e) => { e.preventDefault(); toggleDirection(); });
   
-  if (isEditableChar(ch)) {
-    setCharAtActive(ch);
-  }
-  ev.target.value = '';
-}
-
-/* ========= Crucigrama carga ========= */
-async function init() {
-  const index = await loadIndex();
-
-  els.cwSelect.innerHTML = '';
-  for (const item of index) {
-    const opt = document.createElement('option');
-    opt.value = item.file;
-    opt.textContent = item.title;
-    els.cwSelect.appendChild(opt);
-  }
-
-  const initialFile = index[0]?.file;
-  if (initialFile) {
-    els.cwSelect.value = initialFile;
-    await loadAndStart(initialFile);
-  }
-
-  els.cwSelect.addEventListener('change', async () => {
-    const file = els.cwSelect.value;
-    await loadAndStart(file);
+  // LOGICA DEL BOTON DE AVANCE SECUENCIAL
+  els.nextLevelBtn.addEventListener('click', () => {
+    startLevel(currentLevelIndex + 1);
   });
 
   els.checkBtn.addEventListener('click', () => {
     state.checkMode = !state.checkMode;
     applyCheckVisuals();
-    els.checkBtn.textContent = state.checkMode ? 'Ocultar comprobación' : 'Comprobar';
+    els.checkBtn.textContent = state.checkMode ? 'Ocultar' : 'Comprobar';
   });
 
-  els.clearBtn.addEventListener('click', () => {
-    if (!cw) return;
-    const { rows, cols } = cw.size;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        if (!cellIndex[r][c].isBlock) cellIndex[r][c].user = '';
-      }
+  document.addEventListener('keydown', (ev) => {
+    if (!state.active) return;
+    if (ev.key === 'Backspace') { ev.preventDefault(); clearAtActive(); return; }
+    if (ev.key === 'ArrowLeft') { ev.preventDefault(); moveWithinActive(-1); return; }
+    if (ev.key === 'ArrowRight') { ev.preventDefault(); moveWithinActive(+1); return; }
+    if (ev.key && ev.key.length === 1) {
+      const ch = normalizeLetter(ev.key);
+      if (isEditableChar(ch)) { ev.preventDefault(); setCharAtActive(ch); }
     }
-    renderBoard();
   });
 
-  document.addEventListener('keydown', onKeyDown);
   if (els.hiddenInput) {
-    els.hiddenInput.addEventListener('input', onHiddenInput);
+    els.hiddenInput.addEventListener('input', (ev) => {
+      const last = ev.target.value.substring(ev.target.value.length - 1);
+      const ch = normalizeLetter(last);
+      if (isEditableChar(ch)) setCharAtActive(ch);
+      ev.target.value = '';
+    });
   }
+
+  // Iniciar en el primer nivel de la secuencia
+  startLevel(0);
 }
 
-async function loadAndStart(file) {
-  try {
-    cw = await loadCrossword(file);
-    state.active = null;
-    state.dirPreferred = 'across';
-    state.checkMode = false;
-    els.checkBtn.textContent = 'Comprobar';
-
-    cellIndex = buildCellIndex(cw);
-    renderClues();
-    renderBoard();
-
-    const first = findFirstEditableCell();
-    if (first) {
-      const possible = cellToPossibleDirs(first.r, first.c);
-      if (possible.includes('across')) state.dirPreferred = 'across';
-      else if (possible.includes('down')) state.dirPreferred = 'down';
-      selectCell(first.r, first.c);
-    }
-  } catch (err) {
-    console.error("Error al cargar el crucigrama:", err);
-  }
-}
-
-function findFirstEditableCell() {
-  const { rows, cols } = cw.size;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (cellIndex[r] && cellIndex[r][c] && !cellIndex[r][c].isBlock) return { r, c };
-    }
-  }
-  return null;
-}
-
-/* ========= Iniciar ========= */
-init().catch(err => {
-  console.error(err);
-  els.board.innerHTML = '<div style="padding:12px;color:#fecaca">Error al cargar crucigramas.</div>';
-});
+window.addEventListener('DOMContentLoaded', init);
