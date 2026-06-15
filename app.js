@@ -49,7 +49,7 @@ const REMOTE_LEVELS = [
       ],
       down: [
         { number: 1, row: 0, col: 0, answer: "LUPA", clue: "Lente óptica usada para ampliar la visión de objetos chicos" },
-        { number: 2, row: 0, col: 2, description: "", answer: "DIARIO", clue: "Periódico de publicación cotidiana impreso o digital" },
+        { number: 2, row: 0, col: 2, answer: "DIARIO", clue: "Periódico de publicación cotidiana impreso o digital" },
         { number: 3, row: 0, col: 4, answer: "RANA", clue: "Anfibio pequeño saltador de piel húmeda que croa" },
         { number: 4, row: 0, col: 6, answer: "SALA", clue: "Espacio o estancia principal de una vivienda" }
       ]
@@ -61,7 +61,7 @@ const REMOTE_LEVELS = [
     grid: [
       ".........",
       "#.#.#.#.#",
-      ".........",
+      "........",
       "#.#.#.#.#",
       ".........",
       "#.#.#.#.#",
@@ -118,6 +118,41 @@ const normalizeLetter = (s) => {
 
 function isEditableChar(ch) {
   return /^[A-ZÑ]$/.test(ch);
+}
+
+/* ========= PERSISTENCIA: Guardar y Cargar ========= */
+function getStorageKey() {
+  return `cw_progress_level_${currentLevelIndex}`;
+}
+
+function saveProgress() {
+  if (!cw || !cellIndex) return;
+  const { rows, cols } = cw.size;
+  const progressData = [];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (!cellIndex[r][c].isBlock) {
+        progressData.push({ r, c, user: cellIndex[r][c].user });
+      }
+    }
+  }
+  localStorage.setItem(getStorageKey(), JSON.stringify(progressData));
+}
+
+function loadProgress() {
+  const saved = localStorage.getItem(getStorageKey());
+  if (!saved) return;
+  try {
+    const progressData = JSON.parse(saved);
+    for (const item of progressData) {
+      if (cellIndex[item.r] && cellIndex[item.r][item.c]) {
+        cellIndex[item.r][item.c].user = item.user;
+      }
+    }
+  } catch (e) {
+    console.error("Error al leer el progreso guardado", e);
+  }
 }
 
 /* ========= Modelado de Tablero ========= */
@@ -280,6 +315,7 @@ function setCharAtActive(ch) {
   const { r, c } = state.active;
   cellIndex[r][c].user = ch;
   updateCellDom(r, c);
+  saveProgress(); // Guardar progreso en cada letra puesta
   if (state.checkMode) applyCheckVisuals();
   moveWithinActive(+1);
 }
@@ -291,6 +327,7 @@ function clearAtActive() {
   updateCellDom(r, c);
   const div = els.board.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
   if (div) div.classList.remove('correct', 'wrong');
+  saveProgress(); // Guardar progreso al borrar
   moveWithinActive(-1);
 }
 
@@ -338,6 +375,9 @@ function renderClues() {
 
 /* ========= Control de Flujo de Niveles ========= */
 function startLevel(index) {
+  // Guardar nivel actual antes de cambiar (por si acaso dejas un nivel a medias)
+  localStorage.setItem('cw_current_level_index', index % REMOTE_LEVELS.length);
+
   currentLevelIndex = index % REMOTE_LEVELS.length; 
   cw = REMOTE_LEVELS[currentLevelIndex];
 
@@ -348,10 +388,14 @@ function startLevel(index) {
   els.levelIndicator.textContent = `Nivel ${currentLevelIndex + 1}: ${cw.size.rows}x${cw.size.cols}`;
 
   cellIndex = buildCellIndex(cw);
+  
+  // CARGAR EL PROGRESO ALMACENADO PARA ESTE NIVEL ESPECÍFICO
+  loadProgress();
+
   renderClues();
   renderBoard();
 
-  // Buscar primera casilla para auto-seleccionar
+  // Buscar primera casilla editable para auto-seleccionar
   for (let r = 0; r < cw.size.rows; r++) {
     for (let c = 0; c < cw.size.cols; c++) {
       if (!cellIndex[r][c].isBlock) { selectCell(r, c); return; }
@@ -363,7 +407,6 @@ function startLevel(index) {
 function init() {
   els.toggleDirBtn.addEventListener('click', (e) => { e.preventDefault(); toggleDirection(); });
   
-  // LOGICA DEL BOTON DE AVANCE SECUENCIAL
   els.nextLevelBtn.addEventListener('click', () => {
     startLevel(currentLevelIndex + 1);
   });
@@ -394,8 +437,11 @@ function init() {
     });
   }
 
-  // Iniciar en el primer nivel de la secuencia
-  startLevel(0);
+  // Recordar en qué nivel se quedó el usuario la última vez que abrió la app
+  const lastSavedLevel = localStorage.getItem('cw_current_level_index');
+  const levelToStart = lastSavedLevel !== null ? parseInt(lastSavedLevel, 10) : 0;
+
+  startLevel(levelToStart);
 }
 
 window.addEventListener('DOMContentLoaded', init);
