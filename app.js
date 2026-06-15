@@ -1,29 +1,25 @@
-/* ========= Catálogo de niveles de internet con dificultad incremental ========= */
+/* ========= Catálogo de niveles con engranaje corregido y exacto ========= */
 const REMOTE_LEVELS = [
   {
-    title: "Nivel 1: Inicial Rápido (7x7)",
-    size: { rows: 7, cols: 7 },
+    title: "Nivel 1: Inicial Rápido (5x5)",
+    size: { rows: 5, cols: 5 },
     grid: [
-      "......#",
-      ".#.#.#.",
-      ".......",
-      ".#.#.#.",
-      ".......",
-      ".#.#.#.",
-      "#......"
+      ".....",
+      ".#.#.",
+      ".....",
+      ".#.#.",
+      "....."
     ],
     entries: {
       across: [
-        { number: 1, row: 0, col: 0, answer: "MADRID", clue: "Capital del Reino de España" },
-        { number: 4, row: 2, col: 0, answer: "AMERICA", clue: "Continente rodeado por los océanos Atlántico y Pacífico" },
-        { number: 6, row: 4, col: 0, answer: "PLANETA", clue: "Cuerpo masivo que gira en órbita regular en torno a una estrella" },
-        { number: 7, row: 6, col: 1, answer: "SOLARES", clue: "Sistemas o paneles que aprovechan la radiación lumínica" }
+        { number: 1, row: 0, col: 0, answer: "GATOS", clue: "Mascotas felinas domésticas que maúllan" },
+        { number: 4, row: 2, col: 0, answer: "AMARE", clue: "Del verbo amar (Futuro: Yo...)" },
+        { number: 5, row: 4, col: 0, answer: "SABER", clue: "Tener conocimiento o información de algo" }
       ],
       down: [
-        { number: 1, row: 0, col: 0, answer: "MAPA", clue: "Esquema gráfico o representación plana de la superficie terrestre" },
-        { number: 2, row: 0, col: 2, answer: "DIETA", clue: "Conjunto de alimentos y nutrientes consumidos habitualmente" },
-        { number: 3, row: 0, col: 4, answer: "IMAN", clue: "Objeto ferromagnético con capacidad de atracción natural" },
-        { number: 5, row: 2, col: 6, answer: "ALTAS", clue: "Personas u objetos con una altura superior al promedio" }
+        { number: 1, row: 0, col: 0, answer: "GANAS", clue: "Deseo o voluntad de hacer una cosa" },
+        { number: 2, row: 0, col: 2, answer: "TECHO", clue: "Parte superior que cubre una casa o habitación" },
+        { number: 3, row: 0, col: 4, answer: "SERES", clue: "Organismos vivos, humanos, animales o plantas" }
       ]
     }
   },
@@ -61,7 +57,7 @@ const REMOTE_LEVELS = [
     grid: [
       ".........",
       "#.#.#.#.#",
-      "........",
+      ".........",
       "#.#.#.#.#",
       ".........",
       "#.#.#.#.#",
@@ -315,7 +311,7 @@ function setCharAtActive(ch) {
   const { r, c } = state.active;
   cellIndex[r][c].user = ch;
   updateCellDom(r, c);
-  saveProgress(); // Guardar progreso en cada letra puesta
+  saveProgress(); 
   if (state.checkMode) applyCheckVisuals();
   moveWithinActive(+1);
 }
@@ -327,7 +323,7 @@ function clearAtActive() {
   updateCellDom(r, c);
   const div = els.board.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
   if (div) div.classList.remove('correct', 'wrong');
-  saveProgress(); // Guardar progreso al borrar
+  saveProgress(); 
   moveWithinActive(-1);
 }
 
@@ -375,7 +371,6 @@ function renderClues() {
 
 /* ========= Control de Flujo de Niveles ========= */
 function startLevel(index) {
-  // Guardar nivel actual antes de cambiar (por si acaso dejas un nivel a medias)
   localStorage.setItem('cw_current_level_index', index % REMOTE_LEVELS.length);
 
   currentLevelIndex = index % REMOTE_LEVELS.length; 
@@ -388,14 +383,11 @@ function startLevel(index) {
   els.levelIndicator.textContent = `Nivel ${currentLevelIndex + 1}: ${cw.size.rows}x${cw.size.cols}`;
 
   cellIndex = buildCellIndex(cw);
-  
-  // CARGAR EL PROGRESO ALMACENADO PARA ESTE NIVEL ESPECÍFICO
   loadProgress();
 
   renderClues();
   renderBoard();
 
-  // Buscar primera casilla editable para auto-seleccionar
   for (let r = 0; r < cw.size.rows; r++) {
     for (let c = 0; c < cw.size.cols; c++) {
       if (!cellIndex[r][c].isBlock) { selectCell(r, c); return; }
@@ -437,7 +429,6 @@ function init() {
     });
   }
 
-  // Recordar en qué nivel se quedó el usuario la última vez que abrió la app
   const lastSavedLevel = localStorage.getItem('cw_current_level_index');
   const levelToStart = lastSavedLevel !== null ? parseInt(lastSavedLevel, 10) : 0;
 
